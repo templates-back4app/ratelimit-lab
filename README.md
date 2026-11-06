@@ -6,9 +6,10 @@ One paid endpoint, one loop, and a provider that bills two cents a call. It
 measures what a burst from a caller with no account costs, then adds the limits
 and measures the same burst again.
 
-**Measured on Parse Server 7.4.0 with MongoDB 7, Docker 29.4.3, 29 October 2026.
-The cap figures are five runs each, reported as a range because a race has no
-single answer.**
+**Measured on Parse Server 7.4.0 with MongoDB 7, Docker 29.4.3. First run
+29 October 2026, re-measured from a clean clone on 6 November. The cap figures
+are nine sets of five runs, reported as ranges because a race has no single
+answer; only the last row gave the same number every time.**
 
 > **Read the article:** [How to Rate Limit an API Before the Bill Arrives: What an Unthrottled Burst Actually Costs](https://www.back4app.com/blog/rate-limit-an-api-before-the-bill-arrives?utm_source=github&utm_medium=repo&utm_campaign=ratelimit-lab)
 
@@ -26,15 +27,15 @@ Needs Docker and Node 22. The backend is destroyed and rebuilt every run.
 requests the backend accepted:                200 of 200
 calls that reached the paid provider:         200
 what that cost:                               $4.00 in 0.3s
-the rate it sustained:                        687 paid calls per second, from one laptop
+the rate it sustained:                        769 paid calls per second, from one laptop
 bot accounts created in one burst:            50 of 50 in 0.8s
 ```
 
 | how the limit is written | calls through | spent per run |
 | --- | --- | --- |
 | no limit at all | 200 of 200 | $4.00 in 0.3s |
-| look up the row, check it, add one | **38 – 50** | $0.90 |
-| the same code, row already there | 11 – 23 | $0.37 |
+| look up the row, check it, add one | **23 – 50** | $0.75 |
+| the same code, row already there | 10 – 23 | $0.41 |
 | add one first, then check the number | **exactly 10** | $0.20 |
 
 The cap was ten in every one of those rows.
@@ -51,7 +52,10 @@ await row.save(null, { useMasterKey: true });
 Twenty-five requests arriving together all read the same count, all pass the
 comparison, and only then does any of them write. When no counting row exists
 yet, they also each create one, so the burst counts against several independent
-counters — which is the difference between the 38–50 row and the 11–23 row.
+counters — which is the difference between the 23–50 row and the 10–23 row.
+
+Note the bottom of that second range: ten is the cap, so some runs enforced it
+exactly. The broken version is right often enough to pass a test you run once.
 
 Increment first, then read the number you were given:
 
