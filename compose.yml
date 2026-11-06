@@ -1,0 +1,20 @@
+# A backend with one paid feature behind a cloud function, and a sign-up form.
+# Neither has a limit on it, which is how a generated app arrives.
+services:
+  mongo:
+    image: mongo:7
+    command: ["--quiet"]
+  parse:
+    image: parseplatform/parse-server:7.4.0
+    depends_on: [mongo]
+    ports: ["1344:1337"]
+    volumes: ["./cloud:/parse-server/cloud:ro"]
+    environment:
+      PARSE_SERVER_APPLICATION_ID: spend
+      PARSE_SERVER_MASTER_KEY: spend-master-key
+      PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/dev
+      PARSE_SERVER_CLOUD: /parse-server/cloud/main.js
+      PARSE_SERVER_MASTER_KEY_IPS: "0.0.0.0/0,::/0"
+      PROVIDER_URL: "${PROVIDER_URL:-http://host.docker.internal:1345}"
+      DAILY_CAP: "${DAILY_CAP:-0}"
+    extra_hosts: ["host.docker.internal:host-gateway"]

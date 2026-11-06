@@ -1,0 +1,11 @@
+{
+  "appId": "spend",
+  "masterKey": "spend-master-key",
+  "databaseURI": "mongodb://mongo:27017/dev",
+  "cloud": "/parse-server/cloud/main.js",
+  "masterKeyIps": ["0.0.0.0/0", "::/0"],
+  "rateLimit": [
+    { "requestPath": "/functions/*", "requestTimeWindow": 60000, "requestCount": 20,
+      "errorResponseMessage": "too many requests" }
+  ]
+}

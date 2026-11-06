@@ -1,0 +1,12 @@
+# Parse Server's own rate limit, switched on for stage 2.
+#
+# It cannot be switched on with PARSE_SERVER_RATE_LIMIT: the env-var parser for
+# array options splits the string on commas, so a JSON array arrives as a list
+# of fragments and the server refuses to start with "rateLimit must be an array
+# of objects". A config file is the way in.
+services:
+  parse:
+    volumes:
+      - "./cloud:/parse-server/cloud:ro"
+      - "./parse-config.json:/parse-server/parse-config.json:ro"
+    command: ["/parse-server/parse-config.json"]
